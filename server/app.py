@@ -52,3 +52,12 @@ def update_status():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
+@app.route('/simulate', methods=['POST'])
+def simulate_change():
+    """Имитация случайного изменения состояния датчика"""
+    from sensors import simulate_sensor_change
+    spot, status = simulate_sensor_change()
+    log_action(f"Имитация датчика: место {spot} → {status}")
+    return jsonify({"changed": spot, "new_status": status})
+
