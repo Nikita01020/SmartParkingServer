@@ -50,6 +50,10 @@ def update_status():
         log_action(f"Ошибка обновления — место {place_id} не найдено")
         return jsonify({"success": False, "error": "Place not found"}), 404
 
+from background_task import start_background_thread
+start_background_thread()
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 
