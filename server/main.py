@@ -1,23 +1,22 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
+from flask import Flask, jsonify
+from flask_cors import CORS
 
-class SmartParkingHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == "/":
-            response = {"status": "ok", "message": "SmartParking server running"}
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps(response).encode("utf-8"))
-        else:
-            self.send_response(404)
-            self.end_headers()
+app = Flask(__name__)
+CORS(app)
 
-def run(server_class=HTTPServer, handler_class=SmartParkingHandler):
-    server_address = ('', 8000)
-    httpd = server_class(server_address, handler_class)
-    print("🚗 SmartParkingServer started on http://localhost:8000")
-    httpd.serve_forever()
+# Эмуляция данных с парковки
+@app.route('/places', methods=['GET'])
+def get_places():
+    data = {
+        "places": [
+            {"id": 1, "status": "free"},
+            {"id": 2, "status": "busy"},
+            {"id": 3, "status": "free"},
+            {"id": 4, "status": "busy"},
+            {"id": 5, "status": "free"}
+        ]
+    }
+    return jsonify(data)
 
-if __name__ == '__main__':
-    run()
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=8000)  # безопасный режим
