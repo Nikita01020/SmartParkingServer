@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         String url = "http://10.0.2.2:8000/places";
 
 
+
         Request request = new Request.Builder()
                 .url(url)
                 .build();
