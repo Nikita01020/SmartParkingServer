@@ -12,7 +12,7 @@ parking_places = []
 for i in range(1, 21):  # 20 мест
     parking_places.append({
         "id": i,
-        "status": "free" if i % 2 == 0 else "busy"
+        "status": "free"
     })
 
 @app.route("/places", methods=["GET"])
