@@ -166,10 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!isAuthorized) {
                     showLoginDialog();
                 } else {
-                    Toast.makeText(this,
-                            "Профиль: " + currentUserName +
-                                    "\nБаланс: " + AppPrefs.getBalance(this) + " ₽",
-                            Toast.LENGTH_SHORT).show();
+                    showProfileDialog();
                 }
                 return true;
             } else if (id == R.id.tab_home) {
@@ -185,6 +182,23 @@ public class MainActivity extends AppCompatActivity {
 
         // по умолчанию выделяем главную вкладку
         bottomNav.setSelectedItemId(R.id.tab_home);
+    }
+
+    // ---------- профиль с историей ----------
+    private void showProfileDialog() {
+        String name = currentUserName;
+        int balance = AppPrefs.getBalance(this);
+        String history = AppPrefs.getTripHistory(this);
+
+        String message = "Имя: " + name +
+                "\nБаланс: " + balance + " ₽" +
+                "\n\nИстория поездок:\n" + history;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Профиль")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     // ---------- обработка пунктов БОКОВОГО меню ----------
@@ -209,6 +223,8 @@ public class MainActivity extends AppCompatActivity {
                 isAuthorized = false;
                 currentUserName = "Гость";
                 AppPrefs.setBalance(this, 0); // обнулим баланс при выходе
+                AppPrefs.setCurrentPlaceId(this, -1);
+                AppPrefs.setCurrentPlaceStart(this, 0L);
                 updateHeader();
                 Toast.makeText(this,
                         "Вы вышли из аккаунта",
