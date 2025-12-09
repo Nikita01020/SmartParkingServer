@@ -1,1 +1,31 @@
-client/.idea/misc.xml
+# Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
+
+# Flask instance / cache
+instance/
+*.db
+*.sqlite3
+
+# System
+Thumbs.db
+*.log
+server_log.txt
