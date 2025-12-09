@@ -14,7 +14,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class SettingsActivity extends AppCompatActivity {
 
     private RadioGroup rgTheme, rgLang;
-    private RadioButton rbThemeLight, rbThemeDark, rbThemeNeutral;
+    private RadioButton rbThemeLight, rbThemeDark;
     private RadioButton rbLangRu, rbLangEn;
     private Switch switchNotify;
     private Button btnApply;
@@ -36,7 +36,6 @@ public class SettingsActivity extends AppCompatActivity {
         rgTheme = findViewById(R.id.rgTheme);
         rbThemeLight = findViewById(R.id.rbThemeLight);
         rbThemeDark = findViewById(R.id.rbThemeDark);
-        rbThemeNeutral = findViewById(R.id.rbThemeNeutral);
 
         rgLang = findViewById(R.id.rgLang);
         rbLangRu = findViewById(R.id.rbLangRu);
@@ -103,8 +102,7 @@ public class SettingsActivity extends AppCompatActivity {
         String theme = AppPrefs.getTheme(this);
         if ("dark".equals(theme)) {
             rbThemeDark.setChecked(true);
-        } else if ("neutral".equals(theme)) {
-            rbThemeNeutral.setChecked(true);
+
         } else {
             rbThemeLight.setChecked(true);
         }
@@ -128,8 +126,7 @@ public class SettingsActivity extends AppCompatActivity {
         int checkedThemeId = rgTheme.getCheckedRadioButtonId();
         if (checkedThemeId == R.id.rbThemeDark) {
             theme = "dark";
-        } else if (checkedThemeId == R.id.rbThemeNeutral) {
-            theme = "neutral";
+
         } else {
             theme = "light";
         }
