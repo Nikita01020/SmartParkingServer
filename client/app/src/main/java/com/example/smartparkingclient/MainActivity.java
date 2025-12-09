@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnEnter;
     private Button btnExit;
 
-    // Авторизация (простая заглушка)
+    // Авторизация
     private boolean isAuthorized = false;
     private String currentUserName = "Гость";
 
@@ -59,19 +59,19 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
+        // читаем состояние авторизации из настроек
+        isAuthorized = AppPrefs.isAuthorized(this);
+        currentUserName = AppPrefs.getUserName(this);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                toolbar,
-                R.string.nav_open,
-                R.string.nav_close
+                this, drawerLayout, toolbar,
+                R.string.nav_open, R.string.nav_close
         );
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this::onNavItemSelected);
 
-        // ----- шапка бокового меню -----
         headerView = navigationView.getHeaderView(0);
         headerUserName = headerView.findViewById(R.id.headerUserName);
         headerBalance = headerView.findViewById(R.id.headerBalance);
@@ -133,9 +133,7 @@ public class MainActivity extends AppCompatActivity {
             case "dark":
                 setTheme(R.style.Theme_SmartParkingClient_Dark);
                 break;
-            case "neutral":
-                setTheme(R.style.Theme_SmartParkingClient_Neutral);
-                break;
+
             default:
                 setTheme(R.style.Theme_SmartParkingClient_Light);
                 break;
@@ -146,13 +144,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         String currentTheme = AppPrefs.getTheme(this);
         if (lastTheme != null && !lastTheme.equals(currentTheme)) {
             lastTheme = currentTheme;
             recreate();
             return;
         }
-        // обновляем баланс в шапке (мог измениться при выезде/пополнении)
+
+        // обновляем имя и баланс в шапке
         updateHeader();
     }
 
@@ -166,15 +166,11 @@ public class MainActivity extends AppCompatActivity {
                 if (!isAuthorized) {
                     showLoginDialog();
                 } else {
-                    Toast.makeText(this,
-                            "Профиль: " + currentUserName +
-                                    "\nБаланс: " + AppPrefs.getBalance(this) + " ₽",
-                            Toast.LENGTH_SHORT).show();
+                    showProfileDialog();
                 }
                 return true;
             } else if (id == R.id.tab_home) {
-                // уже на главном экране
-                return true;
+                return true; // уже на главном
             } else if (id == R.id.tab_settings) {
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
@@ -183,8 +179,24 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // по умолчанию выделяем главную вкладку
         bottomNav.setSelectedItemId(R.id.tab_home);
+    }
+
+    // ---------- профиль с историей ----------
+    private void showProfileDialog() {
+        String name = AppPrefs.getUserName(this);
+        int balance = AppPrefs.getBalance(this);
+        String history = AppPrefs.getTripHistory(this);
+
+        String message = "Имя: " + name +
+                "\nБаланс: " + balance + " ₽" +
+                "\n\nИстория поездок:\n" + history;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Профиль")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     // ---------- обработка пунктов БОКОВОГО меню ----------
@@ -202,21 +214,23 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.nav_info) {
             showAboutDialog();
         } else if (id == R.id.nav_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, SettingsActivity.class));
         } else if (id == R.id.nav_logout) {
             if (isAuthorized) {
                 isAuthorized = false;
                 currentUserName = "Гость";
-                AppPrefs.setBalance(this, 0); // обнулим баланс при выходе
+
+                AppPrefs.setAuthorized(this, false);
+                AppPrefs.setUserName(this, "Гость");
+
+                AppPrefs.setBalance(this, 0);
+                AppPrefs.setCurrentPlaceId(this, -1);
+                AppPrefs.setCurrentPlaceStart(this, 0L);
+
                 updateHeader();
-                Toast.makeText(this,
-                        "Вы вышли из аккаунта",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Вы вышли из аккаунта", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this,
-                        "Вы не авторизованы",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Вы не авторизованы", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -235,9 +249,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showNeedAuthToast() {
-        Toast.makeText(this,
-                "Сначала авторизуйтесь",
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Сначала авторизуйтесь", Toast.LENGTH_SHORT).show();
     }
 
     // ---------- простой диалог авторизации ----------
@@ -268,7 +280,12 @@ public class MainActivity extends AppCompatActivity {
 
                     isAuthorized = true;
                     currentUserName = name;
-                    // стартовый баланс, например 150 ₽
+
+                    // сохраняем в настройки
+                    AppPrefs.setAuthorized(this, true);
+                    AppPrefs.setUserName(this, name);
+
+                    // стартовый баланс
                     AppPrefs.setBalance(this, 150);
                     updateHeader();
 
@@ -351,7 +368,8 @@ public class MainActivity extends AppCompatActivity {
     // ---------- обновление шапки меню ----------
     private void updateHeader() {
         if (headerUserName != null) {
-            headerUserName.setText(currentUserName);
+            // имя всегда берём из настроек, чтобы было актуально
+            headerUserName.setText(AppPrefs.getUserName(this));
         }
         if (headerBalance != null) {
             int balance = AppPrefs.getBalance(this);
